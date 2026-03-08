@@ -55,20 +55,20 @@ def search_sequence(req: QueryRequest):
         with open(query_path, "w") as f:
             f.write(f">{req.query_id}\n{req.sequence}\n")  # Temp fasta file
 
-            command = [  # MMseqs2 search command
-                "mmseqs",
-                "easy-search",
-                query_path,
-                DB_PATH,
-                result_path,
-                tmpdir,
-                "--format-output",
-                "target",  # ell MMseqs2 to only output the matching IDs
-                "--search-type",
-                "3",
-                "-s",
-                "5.0",  # Sensitivity level
-            ]
+        command = [
+            "mmseqs",
+            "easy-search",
+            query_path,
+            DB_PATH,
+            result_path,
+            tmpdir,
+            "--format-output",
+            "target",
+            "--search-type",
+            "3",
+            "-s",
+            "5.0",
+        ]
 
         process = subprocess.run(command, capture_output=True, text=True)
 
