@@ -13,8 +13,6 @@ SHARD_PATH = os.environ.get("SHARD_PATH", "/data/shard.fasta")
 DB_PATH = os.environ.get("DB_PATH", "/data/mmseqs_db")
 fasta_index = {}
 
-app = FastAPI()
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
