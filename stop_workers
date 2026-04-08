@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PORTS=(8001 8002 8003 8004)
+
+for port in "${PORTS[@]}"; do
+  pid=$(lsof -ti :$port)
+  if [ -n "$pid" ]; then
+    echo "Killing process on port $port (PID $pid)"
+    kill -9 "$pid"
+  fi
+done
