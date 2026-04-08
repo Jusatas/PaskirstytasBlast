@@ -16,18 +16,40 @@ class QueryRequest(BaseModel):
     query_id: str
 
 
-async def query_worker(client, worker_url, req):
+class Candidate(BaseModel):
+    id: str
+    sequence: str
+
+
+class WorkerResponse(BaseModel):
+    candidates: list[Candidate]
+    timing: dict
+
+
+async def query_worker(client, worker_url, req) -> WorkerResponse:
     response = await client.post(
         f"{worker_url}/search",
         json={"sequence": req.sequence, "query_id": req.query_id},
         timeout=REQUEST_TIMEOUT,
     )
-    return response.json()
+    return WorkerResponse(**response.json())
+
+
+def _extract_candidates(responses: list[WorkerResponse]) -> list[Candidate]:
+    seen_sequences = {}
+
+    for response in responses:
+        for candidate in response.candidates:
+            if candidate.sequence not in seen_sequences:
+                seen_sequences[candidate.sequence] = candidate
+
+    return list(seen_sequences.values())
 
 
 @app.post("/query")
 async def query(req: QueryRequest):
     tasks = []
+    results = []
     async with httpx.AsyncClient() as client:
         for worker in WORKERS:
             task = query_worker(client, worker, req)
@@ -35,4 +57,5 @@ async def query(req: QueryRequest):
 
         results = await asyncio.gather(*tasks)
 
-    return {"results": results}
+    candidates = _extract_candidates(results)
+    return {"candidates": candidates}
