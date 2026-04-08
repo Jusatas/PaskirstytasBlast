@@ -1,0 +1,28 @@
+#!/bin/bash
+
+wait_for_http() {
+  local port=$1
+  echo "Waiting for worker on port $port to become ready..."
+  until curl -s "http://localhost:$port/health" > /dev/null; do
+    sleep 0.5
+  done
+  echo "Worker on port $port is ready!"
+}
+
+echo "Starting worker 1..."
+SHARD_PATH=data/shard_1.fasta DB_PATH=data/mmseqs_db_1 uvicorn worker.main:app --port 8001 &
+wait_for_http 8001
+
+echo "Starting worker 2..."
+SHARD_PATH=data/shard_2.fasta DB_PATH=data/mmseqs_db_2 uvicorn worker.main:app --port 8002 &
+wait_for_http 8002
+
+echo "Starting worker 3..."
+SHARD_PATH=data/shard_3.fasta DB_PATH=data/mmseqs_db_3 uvicorn worker.main:app --port 8003 &
+wait_for_http 8003
+
+echo "Starting worker 4..."
+SHARD_PATH=data/shard_4.fasta DB_PATH=data/mmseqs_db_4 uvicorn worker.main:app --port 8004 &
+wait_for_http 8004
+
+echo "All workers started"
