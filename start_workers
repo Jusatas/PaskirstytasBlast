@@ -3,10 +3,10 @@
 wait_for_http() {
   local port=$1
   echo "Waiting for worker on port $port to become ready..."
-  until curl -s "http://localhost:$port/health" > /dev/null; do
+  until curl -s "http://localhost:$port/health" >/dev/null; do
     sleep 0.5
   done
-  echo "Worker on port $port is ready!"
+  echo "Worker on port $port ready"
 }
 
 echo "Starting worker 1..."
