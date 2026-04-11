@@ -1,0 +1,45 @@
+services:
+  worker1:
+    image: blast-worker
+    environment:
+      - SHARD_PATH=/data/shard_1.fasta
+      - DB_PATH=/data/mmseqs_db_1
+    volumes:
+      - ./data:/data
+
+  worker2:
+    image: blast-worker
+    environment:
+      - SHARD_PATH=/data/shard_2.fasta
+      - DB_PATH=/data/mmseqs_db_2
+    volumes:
+      - ./data:/data
+
+  worker3:
+    image: blast-worker
+    environment:
+      - SHARD_PATH=/data/shard_3.fasta
+      - DB_PATH=/data/mmseqs_db_3
+    volumes:
+      - ./data:/data
+
+  worker4:
+    image: blast-worker
+    environment:
+      - SHARD_PATH=/data/shard_4.fasta
+      - DB_PATH=/data/mmseqs_db_4
+    volumes:
+      - ./data:/data
+
+  central:
+    image: blast-central
+    ports:
+      - "8080:8000"
+    environment:
+      - WORKERS=http://worker1:8000,http://worker2:8000,http://worker3:8000,http://worker4:8000
+    depends_on:
+      - worker1
+      - worker2
+      - worker3
+      - worker4
+

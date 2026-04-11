@@ -101,8 +101,6 @@ def search_sequence(req: QueryRequest):
         },
     }
 
-
 @app.get("/health")
 def health_check():
-    """A simple route to check if the worker is alive."""
     return {"status": "ok", "sequences_loaded": len(fasta_index)}

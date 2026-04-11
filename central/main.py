@@ -16,7 +16,7 @@ WORKERS = [
     "http://localhost:8003",
     "http://localhost:8004",
 ]
-
+WORKERS = os.environ.get("WORKERS", "http://localhost:8001,http://localhost:8002,http://localhost:8003,http://localhost:8004").split(",")
 
 class QueryRequest(BaseModel):
     sequence: str
