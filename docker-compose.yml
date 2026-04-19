@@ -1,5 +1,6 @@
 services:
   worker1:
+    build: ./worker
     image: blast-worker
     environment:
       - SHARD_PATH=/data/shard_1.fasta
@@ -8,6 +9,7 @@ services:
       - ./data:/data
 
   worker2:
+    build: ./worker
     image: blast-worker
     environment:
       - SHARD_PATH=/data/shard_2.fasta
@@ -16,6 +18,7 @@ services:
       - ./data:/data
 
   worker3:
+    build: ./worker
     image: blast-worker
     environment:
       - SHARD_PATH=/data/shard_3.fasta
@@ -24,6 +27,7 @@ services:
       - ./data:/data
 
   worker4:
+    build: ./worker
     image: blast-worker
     environment:
       - SHARD_PATH=/data/shard_4.fasta
@@ -32,6 +36,7 @@ services:
       - ./data:/data
 
   central:
+    build: ./central
     image: blast-central
     ports:
       - "8080:8000"
