@@ -21,6 +21,7 @@ WORKERS = os.environ.get("WORKERS", "http://localhost:8001,http://localhost:8002
 class QueryRequest(BaseModel):
     sequence: str
     query_id: str
+    top_n: int = 5
 
 
 class Candidate(BaseModel):
@@ -109,6 +110,41 @@ def _parse_blast_output(blast_output: str) -> list[dict]:
     return hits
 
 
+def _format_report(req: QueryRequest, worker_stats: list, candidates_count: int, hits: list) -> str:
+    top_hits = hits[:req.top_n]
+    lines = [
+        "====================================================",
+        "DISTRIBUTED BLAST PIPELINE REPORT",
+        "====================================================",
+        f"Query ID:        {req.query_id}",
+        f"Query length:    {len(req.sequence)} bp",
+        f"Nodes queried:   {len(worker_stats)}",
+        "",
+        "WORKER STATISTICS",
+        "-----------------",
+    ]
+    for w in worker_stats:
+        lines.append(f"  {w['worker_url']}: {w['candidates_found']} candidates ({w['search_time_seconds']}s)")
+    lines += [
+        "",
+        f"Total candidates after deduplication: {candidates_count}",
+        "",
+        f"TOP {req.top_n} HITS (sorted by E-value)",
+        "-------------------------------",
+    ]
+    for i, hit in enumerate(top_hits, 1):
+        lines.append(f"{i}. {hit['subject_id']}")
+        lines.append(f"   Identity: {hit['percent_identity']}% | Length: {hit['alignment_length']} | E-value: {hit['evalue']} | Score: {hit['bitscore']}")
+    lines += [
+        "",
+        "NOTE: E-values are relative to the candidate pool size, not the full",
+        "dataset. Rankings are valid but absolute values are not comparable to",
+        "standard full-database BLAST results.",
+        "====================================================",
+    ]
+    return "\n".join(lines)
+
+
 @app.post("/query")
 async def query(req: QueryRequest):
     pipeline_start = time.time()
@@ -142,6 +178,7 @@ async def query(req: QueryRequest):
             "candidates_after_dedup": 0,
             "hits": [],
             "note": "No candidates found across all workers",
+            "report": _format_report(req, worker_stats, len(candidates), []),
             "total_pipeline_time_seconds": round(time.time() - pipeline_start, 3),
         }
 
@@ -156,5 +193,6 @@ async def query(req: QueryRequest):
         "worker_stats": worker_stats,
         "candidates_after_dedup": len(candidates),
         "hits": hits,
+        "report": _format_report(req, worker_stats, len(candidates), hits),
         "total_pipeline_time_seconds": round(time.time() - pipeline_start, 3),
     }
