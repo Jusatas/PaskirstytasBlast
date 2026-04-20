@@ -9,7 +9,7 @@ import time
 
 app = FastAPI()
 
-REQUEST_TIMEOUT = 60.0
+REQUEST_TIMEOUT = 300
 WORKERS = [
     "http://localhost:8001",
     "http://localhost:8002",
