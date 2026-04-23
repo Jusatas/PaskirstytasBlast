@@ -16,26 +16,17 @@ fasta_index = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Build the MMseqs2 database if it's not already there
-    if not os.path.exists(f"{DB_PATH}.index"):
+    if not os.path.exists(f"{DB_PATH}.dbtype"):
         subprocess.run(["mmseqs", "createdb", SHARD_PATH, DB_PATH], check=True)
-        subprocess.run(
-            ["mmseqs", "createindex", DB_PATH, "/tmp", "--search-type", "3"], check=True
-        )
         print("Database compiled")
     else:
         print("Database already exists. Skipping compilation.")
-
     global fasta_index
     fasta_index = SeqIO.index(SHARD_PATH, "fasta")
     print("Worker startup complete")
-
     yield
-
     print("Worker shutting down")
     fasta_index.close()
-
-
 app = FastAPI(lifespan=lifespan)
 
 
