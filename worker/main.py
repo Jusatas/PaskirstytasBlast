@@ -10,6 +10,7 @@ from Bio import SeqIO
 from contextlib import asynccontextmanager
 
 SHARD_PATH = os.environ.get("SHARD_PATH", "/data/shard.fasta")
+SHARD_FORMAT = "fastq" if SHARD_PATH.endswith(".fastq") else "fasta"
 DB_PATH = os.environ.get("DB_PATH", "/data/mmseqs_db")
 fasta_index = {}
 
@@ -22,7 +23,7 @@ async def lifespan(app: FastAPI):
     else:
         print("Database already exists. Skipping compilation.")
     global fasta_index
-    fasta_index = SeqIO.index(SHARD_PATH, "fasta")
+    fasta_index = SeqIO.index(SHARD_PATH, SHARD_FORMAT)
     print("Worker startup complete")
     yield
     print("Worker shutting down")
