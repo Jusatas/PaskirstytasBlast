@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 import tempfile
 import os
 import subprocess
@@ -22,6 +22,20 @@ class QueryRequest(BaseModel):
     sequence: str
     query_id: str
     top_n: int = 5
+
+    @field_validator('sequence')
+    @classmethod
+    def sequence_must_be_long_enough(cls, v):
+        if len(v) < 20:
+            raise ValueError('Sequence must be at least 20bp')
+        return v
+
+    @field_validator('top_n')
+    @classmethod
+    def top_n_must_be_positive(cls, v):
+        if v < 1:
+            raise ValueError('top_n must be at least 1')
+        return v
 
 
 class Candidate(BaseModel):
