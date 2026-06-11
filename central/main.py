@@ -9,14 +9,11 @@ import time
 
 app = FastAPI()
 
-REQUEST_TIMEOUT = 300
-WORKERS = [
-    "http://localhost:8001",
-    "http://localhost:8002",
-    "http://localhost:8003",
-    "http://localhost:8004",
-]
-WORKERS = os.environ.get("WORKERS", "http://localhost:8001,http://localhost:8002,http://localhost:8003,http://localhost:8004").split(",")
+REQUEST_TIMEOUT = 300.0
+WORKERS = os.environ.get(
+    "WORKERS",
+    "http://localhost:8001,http://localhost:8002,http://localhost:8003,https://footsie-ungodly-despair.ngrok-free.dev"
+).split(",")
 
 class QueryRequest(BaseModel):
     sequence: str
@@ -50,9 +47,10 @@ class WorkerResponse(BaseModel):
 
 async def query_worker(client, worker_url, req) -> WorkerResponse:
     response = await client.post(
-        f"{worker_url}/search",
-        json={"sequence": req.sequence, "query_id": req.query_id},
-        timeout=REQUEST_TIMEOUT,
+    f"{worker_url}/search",
+    json={"sequence": req.sequence, "query_id": req.query_id},
+    timeout=REQUEST_TIMEOUT,
+    headers={"ngrok-skip-browser-warning": "true"}
     )
     return WorkerResponse(**response.json())
 
