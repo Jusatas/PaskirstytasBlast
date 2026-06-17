@@ -12,7 +12,10 @@ app = FastAPI()
 REQUEST_TIMEOUT = 300.0
 WORKERS = os.environ.get(
     "WORKERS",
-    "http://localhost:8001,http://localhost:8002,http://localhost:8003,https://footsie-ungodly-despair.ngrok-free.dev"
+    "https://smile-penalty-tagged-ship.trycloudflare.com,"
+    "https://nails-carey-pond-another.trycloudflare.com,"
+    "https://definitions-suggestions-film-blackberry.trycloudflare.com,"
+    "http://localhost:8004"
 ).split(",")
 
 class QueryRequest(BaseModel):
@@ -46,14 +49,24 @@ class WorkerResponse(BaseModel):
 
 
 async def query_worker(client, worker_url, req) -> WorkerResponse:
-    response = await client.post(
-    f"{worker_url}/search",
-    json={"sequence": req.sequence, "query_id": req.query_id},
-    timeout=REQUEST_TIMEOUT,
-    headers={"ngrok-skip-browser-warning": "true"}
-    )
-    return WorkerResponse(**response.json())
+    print(f"\n=== Querying {worker_url} ===")
 
+    response = await client.post(
+        f"{worker_url}/search",
+        json={"sequence": req.sequence, "query_id": req.query_id},
+        timeout=REQUEST_TIMEOUT,
+    )
+
+    print(f"{worker_url}: status={response.status_code}")
+    print(f"{worker_url}: body={repr(response.text[:500])}")
+
+    try:
+        return WorkerResponse(**response.json())
+    except Exception as e:
+        print(f"\nFAILED TO PARSE RESPONSE FROM {worker_url}")
+        print("Status:", response.status_code)
+        print("Body:", repr(response.text))
+        raise
 
 def _extract_candidates(responses: list[WorkerResponse]) -> list[Candidate]:
     seen_sequences = {}
